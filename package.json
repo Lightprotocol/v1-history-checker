@@ -1,0 +1,41 @@
+{
+  "name": "v1-history-script",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/jest": "^29.5.1",
+    "@types/node": "^18.16.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.26.0",
+    "@solana/spl-token": "^0.3.7",
+    "@solana/web3.js": "^1.66.2",
+    "axios": "^0.26.0",
+    "bignumber.js": "^9.0.0",
+    "bs58": "^5.0.0",
+    "circomlib": "^0.5.5",
+    "circomlibjs": "^0.1.0",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^10.0.0",
+    "eth-sig-util": "^3.0.1",
+    "ethers": "^5.5.1",
+    "n64": "^0.2.10",
+    "readline": "^1.3.0",
+    "snarkjs": "^0.4.10",
+    "source-map-explorer": "^2.5.3",
+    "ts-loader": "^9.4.2",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
+  }
+}
