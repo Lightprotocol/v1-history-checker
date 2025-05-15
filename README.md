@@ -27,3 +27,6 @@ the process may take up to 30 minutes to complete.
 when finished, you can find the all found user transactions inside
 `transactions.json` file and the enriched utxo data in the `enrichedUtxos.json`
 file.
+
+if no transactions are found, this means there were no Light V1 transactions
+found for your provided wallet.
