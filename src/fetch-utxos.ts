@@ -20,7 +20,7 @@ export async function getNullifiers(connection: Connection) {
     commitment: "confirmed",
     filters: [{ dataSize: 2 }],
   });
-  console.log("Nullifier Accounts:", nullifierAccounts);
+
   let nullifierPubkeys: string[] = [];
   nullifierAccounts.map((acc) => nullifierPubkeys.push(acc.pubkey.toBase58()));
   return nullifierPubkeys;

@@ -1,12 +1,10 @@
 //@ts-check
 import nacl from "tweetnacl";
 import { LeafAccount } from "./util";
-import { UserUtxo } from "../get-user-transactions";
 import { Token } from "../constants";
 import { PublicKey } from "@solana/web3.js";
 
 // all utxos that were created after the slot arent encrypted with legacy encryption anymore
-// FIXME: TODO: SET WORKER TO CORRECT MERKLETREES
 // const MERKLE_TREE_PDA_PUBKEY = new solana.PublicKey(
 //   "AVyGbAJFQVwjTaMAaNV59wzTWMrkghscv1bDxy1WPCFv",
 // );
@@ -73,69 +71,65 @@ export const tryDecryptBytes = (
     ];
 
     utxoPair.map((encryptedUtxo, i) => {
-      if (acc.slot === null || isV2RolloverPeriod(acc.slot)) {
-        let [success, utxoBytes] = decryptIntoBytes(
+      let [success1, utxoBytes1] = decryptIntoBytes(
+        encryptedUtxo,
+        nonces[i],
+        senderThrowAwayPubkeys[i],
+        recipientEncryptionKeypair,
+        acc.index.u64
+      );
+
+      if (success1) {
+        let utxo = utxoBytes1;
+        decrypted.push({ token: token!, utxo: utxo as any, legacy: false });
+        if (!userIndices.includes(Number(acc.index.u64) / 2)) {
+          userIndices.push(Number(acc.index.u64) / 2);
+        }
+      } else {
+        let [success2, utxoBytes2] = decryptIntoBytes(
           encryptedUtxo,
           nonces[i],
           senderThrowAwayPubkeys[i],
-          recipientEncryptionKeypair,
+          recipientEncryptionKeypairLegacy,
           acc.index.u64
         );
-
-        if (success) {
-          let utxo = utxoBytes;
-          decrypted.push({ token: token!, utxo: utxo as any, legacy: false });
+        if (success2) {
+          let utxo = utxoBytes2;
+          decrypted.push({ token: token!, utxo: utxo as any, legacy: true });
           if (!userIndices.includes(Number(acc.index.u64) / 2)) {
             userIndices.push(Number(acc.index.u64) / 2);
           }
-        } else if (!success) {
-          let [successLegacy, utxoBytesLegacy] = decryptIntoBytes(
-            encryptedUtxo,
-            nonces[i],
-            senderThrowAwayPubkeys[i],
-            recipientEncryptionKeypairLegacy,
-            acc.index.u64
-          );
-          if (successLegacy) {
-            let utxo = utxoBytesLegacy;
-            decrypted.push({ token: token!, utxo: utxo as any, legacy: true });
-            if (!userIndices.includes(Number(acc.index.u64) / 2)) {
-              userIndices.push(Number(acc.index.u64) / 2);
-            }
-          }
         }
-      } else {
-        if (isV2Encryption(acc.slot)) {
-          let [success, utxoBytes] = decryptIntoBytes(
-            encryptedUtxo,
-            nonces[i],
-            senderThrowAwayPubkeys[i],
-            recipientEncryptionKeypair,
-            acc.index.u64
-          );
+      }
 
-          if (success) {
-            let utxo = utxoBytes;
-            decrypted.push({ token: token!, utxo: utxo as any, legacy: false });
-            if (!userIndices.includes(Number(acc.index.u64) / 2)) {
-              userIndices.push(Number(acc.index.u64) / 2);
-            }
-          }
-        } else if (!isV2Encryption(acc.slot)) {
-          let [successLegacy, utxoBytesLegacy] = decryptIntoBytes(
-            encryptedUtxo,
-            nonces[i],
-            senderThrowAwayPubkeys[i],
-            recipientEncryptionKeypairLegacy,
-            acc.index.u64
-          );
-          if (successLegacy) {
-            let utxo = utxoBytesLegacy;
-            decrypted.push({ token: token!, utxo: utxo as any, legacy: true });
-            if (!userIndices.includes(Number(acc.index.u64) / 2)) {
-              userIndices.push(Number(acc.index.u64) / 2);
-            }
-          }
+      let [success3, utxoBytes3] = decryptIntoBytes(
+        encryptedUtxo,
+        nonces[i],
+        senderThrowAwayPubkeys[i],
+        recipientEncryptionKeypair,
+        acc.index.u64
+      );
+
+      if (success3) {
+        let utxo = utxoBytes3;
+        decrypted.push({ token: token!, utxo: utxo as any, legacy: false });
+        if (!userIndices.includes(Number(acc.index.u64) / 2)) {
+          userIndices.push(Number(acc.index.u64) / 2);
+        }
+      }
+
+      let [successLegacy, utxoBytesLegacy] = decryptIntoBytes(
+        encryptedUtxo,
+        nonces[i],
+        senderThrowAwayPubkeys[i],
+        recipientEncryptionKeypairLegacy,
+        acc.index.u64
+      );
+      if (successLegacy) {
+        let utxo = utxoBytesLegacy;
+        decrypted.push({ token: token!, utxo: utxo as any, legacy: true });
+        if (!userIndices.includes(Number(acc.index.u64) / 2)) {
+          userIndices.push(Number(acc.index.u64) / 2);
         }
       }
     });
@@ -172,21 +166,17 @@ export const decryptLeaves = (
   recipientEncryptionKeypair: nacl.BoxKeyPair,
   recipientEncryptionKeypairLegacy: nacl.BoxKeyPair
 ) => {
-  console.time("DECR1");
   let { userUtxos: decryptedUtxoBytesSol, userIndices } = tryDecryptBytes(
     sortedLeafAccounts.sol,
     recipientEncryptionKeypair,
     recipientEncryptionKeypairLegacy
   );
-  console.timeEnd("DECR1");
 
-  console.time("DECR2");
   let { userUtxos: decryptedUtxoBytesUsdc } = tryDecryptBytes(
     sortedLeafAccounts.usdc,
     recipientEncryptionKeypair,
     recipientEncryptionKeypairLegacy
   );
-  console.timeEnd("DECR2");
 
   return {
     decryptedUtxoBytes: {

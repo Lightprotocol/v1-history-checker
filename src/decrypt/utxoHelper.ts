@@ -22,7 +22,7 @@ export async function fetchAndSortLeavesLegacy({
 
   var leavesToSort: LeafAccount[] = [];
   leafAccounts.map((acc) => {
-    let bytes = leafAccountToBytes(acc, 0); // null
+    let bytes = leafAccountToBytes(acc, null);
     leavesToSort.push(bytes);
   });
   if (token === Token.USDC) {
@@ -67,7 +67,7 @@ export async function sortLeaves({
 
   var leavesToSort: LeafAccount[] = [];
   leafAccounts.map((acc) => {
-    let bytes = leafAccountToBytes(acc, 0); // null
+    let bytes = leafAccountToBytes(acc, null);
     leavesToSort.push(bytes);
   });
   if (token === Token.USDC) {

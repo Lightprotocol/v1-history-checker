@@ -7,7 +7,7 @@ import { Utxo } from "../utxo";
 const { U64 } = require("n64");
 
 export type LeafAccount = {
-  slot: number;
+  slot: number | null;
   index: {
     u64: string;
     bytes: Uint8Array;
@@ -83,7 +83,7 @@ export const leafAccountToBytes = (
   leafAccount: {
     account: { data: Uint8Array };
   },
-  slot: number | 0
+  slot: number | null
 ): LeafAccount => {
   let parsedData = {
     slot: slot,
